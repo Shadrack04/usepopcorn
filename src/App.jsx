@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Nav from "./components/Nav";
 import Main from "./components/Main";
 
@@ -49,29 +49,45 @@ const tempWatchedData = [
   },
 ];
 
-const average = (arr) =>
-  arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
+const API_KEY = "f17e7175";
 
 export default function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
 
-  const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
-  const avgUserRating = average(watched.map((movie) => movie.userRating));
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  useEffect(
+    function () {
+      const controller = new AbortController();
+      async function fetchMovies() {
+        try {
+          const res = await fetch(
+            `http://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`,
+            { signal: controller.signal }
+          );
+          if (!res.ok) throw new Error("Something went wrong");
+          const data = await res.json();
+          setMovies(data.Search);
+        } catch (error) {
+          if (error.name !== "AbortError") {
+            console.log(error.message);
+          }
+        }
+      }
+
+      fetchMovies();
+
+      return function () {
+        controller.abort();
+      };
+    },
+    [query]
+  );
 
   return (
     <>
       <Nav query={query} onChange={setQuery} movies={movies} />
 
-      <Main
-        avgImdbRating={avgImdbRating}
-        avgUserRating={avgUserRating}
-        avgRuntime={avgRuntime}
-        movies={movies}
-        watched={watched}
-      />
+      <Main movies={movies} tempWatchedData={tempWatchedData} />
     </>
   );
 }

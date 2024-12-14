@@ -1,6 +1,6 @@
 import React from "react";
 
-function Nav({ query, setQuery, movies }) {
+function Nav({ query, onChange, movies }) {
   return (
     <>
       <nav className="nav-bar">
@@ -10,10 +10,10 @@ function Nav({ query, setQuery, movies }) {
           type="text"
           placeholder="Search movies..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => onChange(e.target.value)}
         />
         <p className="num-results">
-          Found <strong>{movies.length}</strong> results
+          Found <strong>{movies?.length}</strong> results
         </p>
       </nav>
     </>
